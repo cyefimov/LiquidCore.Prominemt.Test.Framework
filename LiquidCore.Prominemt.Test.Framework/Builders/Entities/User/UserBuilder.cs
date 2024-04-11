@@ -1,6 +1,6 @@
 ﻿namespace LiquidCore.Prominemt.Test.Framework.Builders.Entities.User;
 
-public class UserBuilder
+public sealed class UserBuilder
 {
     private Lazy<Guid> _id = new(default(Guid));
     private Lazy<bool> _isActive = new(default(bool));
