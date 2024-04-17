@@ -477,6 +477,12 @@ public static class GetRandom
     /// <returns>A new ID GUID.</returns>
     public static Guid Id() => Guid.NewGuid();
 
+    /// <summary>Returns an invalid ID</summary>
+    public static readonly Guid InvalidId = Guid.Empty;
+
+    /// <summary>Returns a non-existing ID</summary>
+    public static readonly Guid NonExistingId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
     /// <summary>Returns a new External ID.</summary>
     /// <returns>A new External ID GUID.</returns>
     public static Guid ExternalId() => Guid.NewGuid();
