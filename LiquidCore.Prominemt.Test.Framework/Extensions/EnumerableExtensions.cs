@@ -1,10 +1,10 @@
-﻿namespace LiquidCore.Prominemt.Test.Framework;
+﻿namespace LiquidCore.Prominemt.Test.Framework.Extensions;
 
 /// <summary>
 /// IEnumerable extensions
 /// </summary>
 public static class EnumerableExtensions
-{   
+{
     private static readonly Random Rand = new();
     private static T RandomElement<T>(this IReadOnlyList<T> array) => array[Rand.Next(0, array.Count - 1)];
 
