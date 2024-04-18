@@ -5,4 +5,5 @@ global using System.Collections.Generic;
 global using System.Linq;
 global using Microsoft.Data.SqlClient;
 global using Microsoft.EntityFrameworkCore;
+global using System.Text.Json;
 global using UserEntity = LiquidCore.Prominemt.Model.Persistence.Security.User;
