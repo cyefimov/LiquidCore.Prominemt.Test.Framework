@@ -1,4 +1,6 @@
-﻿namespace LiquidCore.Prominemt.Test.Framework.Extensions;
+﻿using LiquidCore.Prominemt.Test.Framework.Builders.Entities.User;
+
+namespace LiquidCore.Prominemt.Test.Framework.Extensions;
 
 /// <summary>
 /// DB context extensions
@@ -11,6 +13,9 @@ public static class DbContextExtensions
     /// <param name="dbContext">DB context. Instance of <see cref="DbContext"/></param>
     public static void InitializeTestDatabase(this DbContext dbContext)
     {
+        const int minUsers = 1;
+        const int maxUsers = 1000;
+
         const string rootAdminDisplayName = "Root Admin";
         const string rootAdminEmail = "root.admin@prominemt.com";
         var rootAdminExternalId = Guid.Parse("B047A58C-3019-488E-AA9B-EE70B8257612");
@@ -31,27 +36,36 @@ public static class DbContextExtensions
             new SqlParameter("@DemoUserEmail", demoUserEmail)
         };
 
-        const string initSql =
-            """
-                ALTER TABLE [Security].[User] DROP CONSTRAINT [FK_Security_User_CreatedBy_Security_User]
-                ALTER TABLE [Security].[User] DROP CONSTRAINT [FK_Security_User_UpdatedBy_Security_User]
-            
-                INSERT INTO [Security].[User] ([CreatedBy],[UpdatedBy],[ExternalId],[DisplayName],[Email])
-                VALUES (@RootAdminUserId, @RootAdminUserId, @RootAdminExternalId, @RootAdminDisplayName, @RootAdminEmail)
-            
-                SELECT @RootAdminUserId = UserId FROM [Security].[User] WHERE [DisplayName] = @RootAdminDisplayName
-                UPDATE [Security].[User] SET [CreatedBy] = @RootAdminUserId, [UpdatedBy] = @RootAdminUserId
-            
-                INSERT INTO [Security].[User] ([CreatedBy],[UpdatedBy],[ExternalId],[DisplayName],[Email])
-                VALUES (@RootAdminUserId, @RootAdminUserId, @DemoUserExternalId, @DemoUserDisplayName, @DemoUserEmail)
-            
-                ALTER TABLE [Security].[User] WITH CHECK ADD CONSTRAINT [FK_Security_User_CreatedBy_Security_User] FOREIGN KEY([CreatedBy]) REFERENCES [Security].[User] ([UserId])
-                ALTER TABLE [Security].[User] CHECK CONSTRAINT [FK_Security_User_CreatedBy_Security_User]
-            
-                ALTER TABLE [Security].[User] WITH CHECK ADD CONSTRAINT [FK_Security_User_UpdatedBy_Security_User] FOREIGN KEY([UpdatedBy]) REFERENCES [Security].[User] ([UserId])
-                ALTER TABLE [Security].[User] CHECK CONSTRAINT [FK_Security_User_UpdatedBy_Security_User]
-            """;
+        var initSql = new StringBuilder();
+        initSql.AppendLine(" ALTER TABLE [Security].[User] DROP CONSTRAINT [FK_Security_User_CreatedBy_Security_User]");
+        initSql.AppendLine(" ALTER TABLE [Security].[User] DROP CONSTRAINT [FK_Security_User_UpdatedBy_Security_User]");
+        
+        initSql.AppendLine(" INSERT INTO [Security].[User] ([CreatedBy],[UpdatedBy],[ExternalId],[DisplayName],[Email])");
+        initSql.AppendLine(" VALUES (@RootAdminUserId, @RootAdminUserId, @RootAdminExternalId, @RootAdminDisplayName, @RootAdminEmail)");
+        
+        initSql.AppendLine(" SELECT @RootAdminUserId = UserId FROM [Security].[User] WHERE [DisplayName] = @RootAdminDisplayName");
+        initSql.AppendLine(" UPDATE [Security].[User] SET [CreatedBy] = @RootAdminUserId, [UpdatedBy] = @RootAdminUserId");
+        
+        initSql.AppendLine(" INSERT INTO [Security].[User] ([CreatedBy],[UpdatedBy],[ExternalId],[DisplayName],[Email])");
+        initSql.AppendLine(" VALUES (@RootAdminUserId, @RootAdminUserId, @DemoUserExternalId, @DemoUserDisplayName, @DemoUserEmail)");
+        
+        initSql.AppendLine(" ALTER TABLE [Security].[User] WITH CHECK ADD CONSTRAINT [FK_Security_User_CreatedBy_Security_User] FOREIGN KEY([CreatedBy]) REFERENCES [Security].[User] ([UserId])");
+        initSql.AppendLine(" ALTER TABLE [Security].[User] CHECK CONSTRAINT [FK_Security_User_CreatedBy_Security_User]");
+        
+        initSql.AppendLine(" ALTER TABLE [Security].[User] WITH CHECK ADD CONSTRAINT [FK_Security_User_UpdatedBy_Security_User] FOREIGN KEY([UpdatedBy]) REFERENCES [Security].[User] ([UserId])");
+        initSql.AppendLine(" ALTER TABLE [Security].[User] CHECK CONSTRAINT [FK_Security_User_UpdatedBy_Security_User]");
+                       
+        var rand = new Random();
+        var qty = rand.Next(minUsers, maxUsers);
 
-        dbContext.Database.ExecuteSqlRaw(initSql, paramItems);
+        for (var i = 0; i < qty; i++)
+        {
+            var user = UserBuilder.Typical().Build();
+
+            initSql.AppendLine(" INSERT INTO [Security].[User] ([CreatedBy],[UpdatedBy],[ExternalId],[DisplayName],[Email])");
+            initSql.AppendLine($" VALUES (@RootAdminUserId, @RootAdminUserId,'{user.ExternalId}','{user.DisplayName}','{user.Email}')");
+        }
+
+        dbContext.Database.ExecuteSqlRaw(initSql.ToString(), paramItems);
     }
 }

@@ -36,7 +36,7 @@ public sealed class UserBuilder
     public static UserBuilder Simple() =>
         Default()
             .WithExternalId(GetRandom.ExternalId())
-            .WithDisplayName(GetRandom.String(5, 20))
+            .WithDisplayName(GetRandom.Name())
             .WithEmail(GetRandom.Email(5, 20).ToLower());
 
     public static UserBuilder Typical() =>
